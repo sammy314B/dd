@@ -77,8 +77,7 @@ plot(
   vertex.color =  memcolors[V(igraphobject)$community],
   vertex.size = 15,
   vertex.label.cex = 0.8,
-   vertex.label.color = "black",layout = layouts,
-  main = "Karate Club Walktrap Communities"
+   vertex.label.color = "black",layout = layouts
 )
 
 ### Or use in built functionality from igraph to plot the communities
@@ -90,8 +89,7 @@ plot( clustered, #Add cluster object in front
   vertex.color =  V(igraphobject)$community,
   vertex.size = 15,
   vertex.label.cex = 0.8,
-   vertex.label.color = "black",layout = layouts,
-  main = "Karate Club Walktrap Communities"
+   vertex.label.color = "black",layout = layouts
 )
 
 ### Note: Edges to the next community are labelled in red, while those within a community are labelled black!
@@ -178,12 +176,7 @@ modularity(node_deletion_of_keyplayers, membership(clustered))
 ## Node attack centrality metrics
 
 ```{r , fig.width= 13 , fig.height = 12}
-### Let us also check the individuals that would be identified as important to remove in order to fracture the network by standard centrality metrics
-
-# Top 5 nodes on betweenness centrality are John A, Mr Hi, Actor 33, Actor 3, Actor 32
-between <- betweenness(igraphobject) 
-between %>% sort(decreasing = T)
-#V(igraphobject)$high_betweenness <- between >= 153
+# NOTE: Degree centrality is showcased below, but you can perform analysis and node attack based on betweenness and closeness centrality by replacing degree(igraphobject) with betweenness(igraphobject) or closeness(igraphobject)
 
 # Top 5 nodes on  degree centrality are John A, Mr Hi, Actor 33, Actor 3, Actor 2
 degrees  <- degree(igraphobject) 
@@ -250,3 +243,4 @@ modularity(node_deletion_of_highdegree, membership(clustered))
 
 
 ```
+
