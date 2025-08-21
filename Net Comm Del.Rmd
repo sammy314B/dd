@@ -1,0 +1,252 @@
+---
+title: "Net Comm Del"
+output: html_document
+date: "2025-08-12"
+---
+
+
+```{r setup}
+#install.packages(c("tidyverse", "keyplayer")) 
+
+#This installs the other packages required to run the program besides igraph, which cannot run normally in this environment and is installed directly
+                 
+#Libraries calls the packages you will use for the code. Do not delete them from the setup!
+library(igraph)
+library(tidyverse)
+library(keyplayer)
+
+
+```
+
+## Data set up
+
+```{r , fig.width= 13 , fig.height = 12}
+# Creating an edgelist from data, with the format "from" and "to" (i.e., from person A to person B)
+edgelist <- read_csv("karate_el.csv", col_names = c("from", "to")) # !MANUAL: To use the igraph functions and keyplayer below,this is all you need to change, as long as the file is in an edgelist format
+
+## We can view the first 6 rows of our edgelist with head()
+head(edgelist)
+```
+
+## Creating an igraph object and plotting
+```{r , fig.width= 13 , fig.height = 12}
+
+# Creating an igraph object. This object is used for plotting and for obtaining data about the network.
+igraphobject <- graph_from_data_frame(edgelist, directed = FALSE)
+
+#Choosing layout format: There are many!
+layouts <- layout_with_kk(igraphobject)
+
+### Other graph layouts: add_layout_(), component_wise(), layout_as_bipartite(), layout_as_star(), layout_as_tree(), layout_in_circle(), layout_nicely(), layout_on_grid(), layout_on_sphere(), layout_randomly(), layout_with_dh(), layout_with_fr(), layout_with_gem(), layout_with_graphopt(), layout_with_kk(), layout_with_lgl(), layout_with_mds(), layout_with_sugiyama(), merge_coords(), norm_coords(), normalize()
+
+# plotting of initial graph
+igraphobject <- set_edge_attr(igraphobject, "color", value = "black")
+
+set.seed(1234)
+
+plot(igraphobject, vertex.size = 16, vertex.color = "lightblue", vertex.label.color = "black", vertex.label.cex = 0.8, layout = layouts)
+
+## As you can see, this may not be very "readible"
+
+```
+
+
+## Clusters and plotting
+```{r , fig.width= 13 , fig.height = 12}
+# Attaining cluster membership of individuals in the network with a cluster walktrap algorithm, and saving it.
+clustered <- cluster_walktrap(igraphobject)
+
+# Saving cluster membership into a dataframe
+
+membership_vec <- data.frame(node = V(igraphobject)$name, community = clustered$membership)
+
+# We can see how many individuals are in each community
+table(membership_vec$community)
+
+#Add membership into the igraph object for plotting
+V(igraphobject)$community <- clustered$membership
+
+### I will showcase two options here. First, (!MANUAL) decide to attach a certain colour scheme to the communities
+
+memcolors <- adjustcolor(c("cyan", "gold", "deeppink", "royalblue", "green"), alpha=.6)
+
+
+set.seed(1234) # to ensure reproducibility
+plot(
+   igraphobject,vertex.size = 16,
+  vertex.color =  memcolors[V(igraphobject)$community],
+  vertex.size = 15,
+  vertex.label.cex = 0.8,
+   vertex.label.color = "black",layout = layouts,
+  main = "Karate Club Walktrap Communities"
+)
+
+### Or use in built functionality from igraph to plot the communities
+
+set.seed(1234) # to ensure reproducibility
+
+plot( clustered, #Add cluster object in front
+   igraphobject,vertex.size = 16,
+  vertex.color =  V(igraphobject)$community,
+  vertex.size = 15,
+  vertex.label.cex = 0.8,
+   vertex.label.color = "black",layout = layouts,
+  main = "Karate Club Walktrap Communities"
+)
+
+### Note: Edges to the next community are labelled in red, while those within a community are labelled black!
+
+# Check modularity score. 
+modularity(igraphobject, membership(clustered))
+
+```
+
+
+## Node attack keyplayers
+```{r , fig.width= 13 , fig.height = 12}
+
+set.seed(1234) #For reproducibility
+
+results <- keyplayer::kpset(as_adjacency_matrix(igraphobject), size = 5 #Decide how many keyplayers you want
+                            , type = "diffusion"
+                            , method = "union"
+                            , T = 1, binary = T)
+
+# Tells you who the keyplayers selected are
+results
+V(igraphobject)$name[results$keyplayers]
+
+# Simulate deletion of key players and re-plot
+node_deletion_of_keyplayers <- delete_vertices(igraphobject, V(igraphobject)$name %in% V(igraphobject)$name[results$keyplayers])
+
+
+set.seed(1234)
+
+plot(node_deletion_of_keyplayers, vertex.size = 16, vertex.color = "lightblue", vertex.label.color = "black", vertex.label.cex = 0.8, layout = layouts)
+
+# Determine remaining communities to calculate modularity
+clustered <- cluster_walktrap(node_deletion_of_keyplayers)
+
+# Check modularity score
+
+modularity(node_deletion_of_keyplayers, membership(clustered))
+
+# Plot remaining communities (If you wish, may not be the most relevant question after deletions)
+
+# Saving cluster membership into a dataframe
+
+membership_vec <- data.frame(node = V(node_deletion_of_keyplayers)$name, community = clustered$membership)
+
+V(node_deletion_of_keyplayers)$community <- clustered$membership
+
+#If you still wish to highlight communities after deletion, ensure you are plotting communities with > 1 size since nodes might be isolated
+
+commsize <- table(V(node_deletion_of_keyplayers)$community)
+
+actualcommunities <- names(commsize)[commsize > 1]
+
+
+### !MANUAL: attach a certain colour scheme to the communities if you wish 
+
+memcolors <- adjustcolor(c("cyan", "gold", "deeppink", "royalblue", "green"), alpha=.6)
+
+
+set.seed(1234) # to ensure reproducibility
+
+plot(
+   node_deletion_of_keyplayers,vertex.size = 16,
+  vertex.color =  ifelse(V(node_deletion_of_keyplayers)$community %in% actualcommunities, memcolors[V(node_deletion_of_keyplayers)$community], "white"),
+  vertex.size = 15,
+  vertex.label.cex = 0.8,
+   vertex.label.color = "black",layout = layouts)
+```
+
+### Two indicators of node attack success
+```{r , fig.width= 13 , fig.height = 12}
+# Number of components left (isolated nodes and any seperated communities)
+components(node_deletion_of_keyplayers)$no
+
+# Check modularity score
+
+modularity(node_deletion_of_keyplayers, membership(clustered))
+
+```
+
+
+
+
+## Node attack centrality metrics
+
+```{r , fig.width= 13 , fig.height = 12}
+### Let us also check the individuals that would be identified as important to remove in order to fracture the network by standard centrality metrics
+
+# Top 5 nodes on betweenness centrality are John A, Mr Hi, Actor 33, Actor 3, Actor 32
+between <- betweenness(igraphobject) 
+between %>% sort(decreasing = T)
+#V(igraphobject)$high_betweenness <- between >= 153
+
+# Top 5 nodes on  degree centrality are John A, Mr Hi, Actor 33, Actor 3, Actor 2
+degrees  <- degree(igraphobject) 
+degrees  %>% sort(decreasing = T)
+
+
+# Simulate deletion of highest centrality nodes in a new igraph object
+node_deletion_of_highdegree <- delete_vertices(igraphobject, V(igraphobject)$name %in% c("Mr Hi", "John A", "Actor 33", "Actor 3", "Actor 2")) #!MANUAL: See the list above and put their names here
+
+set.seed(1234)
+
+plot(node_deletion_of_highdegree, vertex.size = 16, vertex.color = "lightblue", vertex.label.color = "black", vertex.label.cex = 0.8, layout = layouts)
+
+
+# Determine remaining communities to calculate modularity
+clustered <- cluster_walktrap(node_deletion_of_highdegree)
+
+
+
+# Plot remaining communities (If you wish, may not be the most relevant question after deletions)
+
+# Saving cluster membership into a dataframe
+
+membership_vec <- data.frame(node = V(node_deletion_of_highdegree)$name, community = clustered$membership)
+
+V(node_deletion_of_highdegree)$community <- clustered$membership
+
+#If you still wish to highlight communities after deletion, ensure you are plotting communities with > 1 size since nodes might be isolated
+
+commsize <- table(V(node_deletion_of_highdegree)$community)
+
+actualcommunities <- names(commsize)[commsize > 1]
+
+
+### !MANUAL attach a certain colour scheme to the communities if you wish 
+
+memcolors <- adjustcolor(c("cyan", "gold", "deeppink", "royalblue", "green"), alpha=.6)
+
+
+set.seed(1234) # to ensure reproducibility
+plot(
+   node_deletion_of_highdegree,vertex.size = 16,
+  vertex.color =  ifelse(V(node_deletion_of_highdegree)$community %in% actualcommunities, memcolors[V(node_deletion_of_highdegree)$community], "white"),
+  vertex.size = 15,
+  vertex.label.cex = 0.8,
+   vertex.label.color = "black",layout = layouts)
+
+
+
+
+```
+
+
+### Two indicators of node attack success
+```{r , fig.width= 13 , fig.height = 12}
+# Number of components left (isolated nodes and any seperated communities)
+components(node_deletion_of_highdegree)$no
+
+# Check modularity score
+
+modularity(node_deletion_of_highdegree, membership(clustered))
+
+## If this works, great! However, in denser graphs, it is often hard to tell wich centrality metrics are more important, and there is often redundancy in deleting the highest nodes of certain centrality metrics. Centrality scores will likely change after each deletion, and some times deleting one node instead of a few is enough to seperate a certain segment of the network.
+
+
+```
