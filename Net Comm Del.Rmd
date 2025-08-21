@@ -108,8 +108,7 @@ modularity(igraphobject, membership(clustered))
 set.seed(1234) #For reproducibility
 
 results <- keyplayer::kpset(as_adjacency_matrix(igraphobject), size = 5 # !MANUAL Decide how many keyplayers you want
-                            , type = "diffusion"
-                            , method = "union"
+                            , type = "fragment"
                             , T = 1, binary = T)
 
 # Tells you who the keyplayers selected are
@@ -251,5 +250,6 @@ modularity(node_deletion_of_highdegree, membership(clustered))
 
 
 ```
+
 
 
