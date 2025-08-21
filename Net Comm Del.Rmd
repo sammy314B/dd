@@ -169,8 +169,8 @@ components(igraphobject)$no #Number of components left( isolated nodes and any s
 components(igraphobject)$csize %>% max() / gorder(igraphobject)
 
 # Post deletion giant component size
-components(node_deletion_of_highdegree)$no #Number of components left( isolated nodes and any seperated communities)
-components(node_deletion_of_highdegree)$csize %>% max() / gorder(node_deletion_of_highdegree)
+components(node_deletion_of_keyplayers)$no #Number of components left( isolated nodes and any seperated communities)
+components(node_deletion_of_keyplayers)$csize %>% max() / gorder(node_deletion_of_keyplayers)
 
 # Original modularity score
 
@@ -178,7 +178,7 @@ modularity(igraphobject, membership(clustered))
 
 # Post deletion modularity score
 
-modularity(node_deletion_of_highdegree, membership(clustereddel))
+modularity(node_deletion_of_keyplayers, membership(clustereddel))
 
 ```
 
@@ -268,6 +268,7 @@ modularity(node_deletion_of_highdegree, membership(clustereddel))
 
 
 ```
+
 
 
 
