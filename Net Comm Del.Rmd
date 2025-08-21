@@ -118,6 +118,7 @@ V(igraphobject)$name[results$keyplayers]
 # Simulate deletion of key players and re-plot
 node_deletion_of_keyplayers <- delete_vertices(igraphobject, V(igraphobject)$name %in% V(igraphobject)$name[results$keyplayers])
 
+layouts <- layout_with_fr(node_deletion_of_keyplayers)
 
 set.seed(1234)
 
@@ -189,8 +190,7 @@ top5_nodes <- names(sort(degrees, decreasing = TRUE))[1:5]  # !MANUAL Decide how
 
 # Simulate deletion of highest centrality nodes in a new igraph object
 node_deletion_of_highdegree <- delete_vertices(igraphobject, top5_nodes)
-
-node_deletion_of_highdegree <- delete_vertices(igraphobject, V(igraphobject)$name %in% c("Mr Hi", "John A", "Actor 33", "Actor 3", "Actor 2")) 
+layouts <- layout_with_fr(node_deletion_of_highdegree)
 
 set.seed(1234)
 
@@ -250,6 +250,7 @@ modularity(node_deletion_of_highdegree, membership(clustered))
 
 
 ```
+
 
 
 
