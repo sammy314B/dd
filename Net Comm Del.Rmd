@@ -124,7 +124,7 @@ set.seed(1234)
 plot(node_deletion_of_keyplayers, vertex.size = 16, vertex.color = "lightblue", vertex.label.color = "black", vertex.label.cex = 0.8, layout = layouts)
 
 # Determine remaining communities to calculate modularity
-clustered <- cluster_walktrap(node_deletion_of_keyplayers)
+clustered <- cluster_walktrap(node_deletion_of_keyplayers) # !MANUAL replace cluster_walktrap(igraphobject) with cluster_infomap(igraphobject) if graph is directed.
 
 # Check modularity score
 
@@ -198,7 +198,7 @@ plot(node_deletion_of_highdegree, vertex.size = 16, vertex.color = "lightblue", 
 
 
 # Determine remaining communities to calculate modularity
-clustered <- cluster_walktrap(node_deletion_of_highdegree)
+clustered <- cluster_walktrap(node_deletion_of_highdegree) # !MANUAL replace cluster_walktrap(igraphobject) with cluster_infomap(igraphobject) if graph is directed.
 
 
 
@@ -240,7 +240,7 @@ plot(
 ```{r , fig.width= 13 , fig.height = 12}
 # Giant component size
 components(node_deletion_of_highdegree)$no #Number of components left( isolated nodes and any seperated communities)
-components(node_deletion_of_highdegree)$csize %>% max() / gorder(node_deletion_of_keyplayers)
+components(node_deletion_of_highdegree)$csize %>% max() / gorder(node_deletion_of_highdegree)
 
 # Check modularity score
 
@@ -250,6 +250,7 @@ modularity(node_deletion_of_highdegree, membership(clustered))
 
 
 ```
+
 
 
 
