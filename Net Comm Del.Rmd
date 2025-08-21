@@ -125,19 +125,19 @@ set.seed(1234)
 plot(node_deletion_of_keyplayers, vertex.size = 16, vertex.color = "lightblue", vertex.label.color = "black", vertex.label.cex = 0.8, layout = layouts)
 
 # Determine remaining communities to calculate modularity
-clustered <- cluster_walktrap(node_deletion_of_keyplayers) # !MANUAL replace cluster_walktrap(igraphobject) with cluster_infomap(igraphobject) if graph is directed.
+clustereddel <- cluster_walktrap(node_deletion_of_keyplayers) # !MANUAL replace cluster_walktrap(node_deletion_of_keyplayers) with cluster_infomap(node_deletion_of_keyplayers) if graph is directed.
 
 # Check modularity score
 
-modularity(node_deletion_of_keyplayers, membership(clustered))
+modularity(node_deletion_of_keyplayers, membership(clustereddel))
 
 # Plot remaining communities (If you wish, may not be the most relevant question after deletions)
 
 # Saving cluster membership into a dataframe
 
-membership_vec <- data.frame(node = V(node_deletion_of_keyplayers)$name, community = clustered$membership)
+membership_vec <- data.frame(node = V(node_deletion_of_keyplayers)$name, community = clustereddel$membership)
 
-V(node_deletion_of_keyplayers)$community <- clustered$membership
+V(node_deletion_of_keyplayers)$community <- clustereddel$membership
 
 #If you still wish to highlight communities after deletion, ensure you are plotting communities with > 1 size since nodes might be isolated
 
@@ -164,13 +164,21 @@ plot(
 ### Two indicators of node attack success
 ```{r , fig.width= 13 , fig.height = 12}
 
-# Giant component size
-components(node_deletion_of_keyplayers)$no #Number of components left( isolated nodes and any seperated communities)
-components(node_deletion_of_keyplayers)$csize %>% max() / gorder(node_deletion_of_keyplayers)
+# Original giant component size
+components(igraphobject)$no #Number of components left( isolated nodes and any seperated communities)
+components(igraphobject)$csize %>% max() / gorder(igraphobject)
 
-# Check modularity score
+# Post deletion giant component size
+components(node_deletion_of_highdegree)$no #Number of components left( isolated nodes and any seperated communities)
+components(node_deletion_of_highdegree)$csize %>% max() / gorder(node_deletion_of_highdegree)
 
-modularity(node_deletion_of_keyplayers, membership(clustered))
+# Original modularity score
+
+modularity(igraphobject, membership(clustered))
+
+# Post deletion modularity score
+
+modularity(node_deletion_of_highdegree, membership(clustereddel))
 
 ```
 
@@ -198,7 +206,7 @@ plot(node_deletion_of_highdegree, vertex.size = 16, vertex.color = "lightblue", 
 
 
 # Determine remaining communities to calculate modularity
-clustered <- cluster_walktrap(node_deletion_of_highdegree) # !MANUAL replace cluster_walktrap(igraphobject) with cluster_infomap(igraphobject) if graph is directed.
+clustereddel <- cluster_walktrap(node_deletion_of_highdegree) # !MANUAL replace cluster_walktrap(node_deletion_of_highdegree) with cluster_infomap(node_deletion_of_highdegree) if graph is directed.
 
 
 
@@ -206,9 +214,9 @@ clustered <- cluster_walktrap(node_deletion_of_highdegree) # !MANUAL replace clu
 
 # Saving cluster membership into a dataframe
 
-membership_vec <- data.frame(node = V(node_deletion_of_highdegree)$name, community = clustered$membership)
+membership_vec <- data.frame(node = V(node_deletion_of_highdegree)$name, community = clustereddel$membership)
 
-V(node_deletion_of_highdegree)$community <- clustered$membership
+V(node_deletion_of_highdegree)$community <- clustereddel$membership
 
 #If you still wish to highlight communities after deletion, ensure you are plotting communities with > 1 size since nodes might be isolated
 
@@ -238,18 +246,29 @@ plot(
 
 ### Two indicators of node attack success
 ```{r , fig.width= 13 , fig.height = 12}
-# Giant component size
+# Original giant component size
+components(igraphobject)$no #Number of components left( isolated nodes and any seperated communities)
+components(igraphobject)$csize %>% max() / gorder(igraphobject)
+
+# Post deletion giant component size
 components(node_deletion_of_highdegree)$no #Number of components left( isolated nodes and any seperated communities)
 components(node_deletion_of_highdegree)$csize %>% max() / gorder(node_deletion_of_highdegree)
 
-# Check modularity score
+# Original modularity score
 
-modularity(node_deletion_of_highdegree, membership(clustered))
+modularity(igraphobject, membership(clustered))
+
+# Post deletion modularity score
+
+modularity(node_deletion_of_highdegree, membership(clustereddel))
+
 
 ## If this works, great! However, in denser graphs, it is often hard to tell wich centrality metrics are more important, and there is often redundancy in deleting the highest nodes of certain centrality metrics. Centrality scores will likely change after each deletion, and some times deleting one node instead of a few is enough to seperate a certain segment of the network.
 
 
+
 ```
+
 
 
 
